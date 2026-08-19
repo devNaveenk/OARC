@@ -32,5 +32,56 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Adds a direct "New chat" button to the AI panel header (the native
+      // widget only offers this buried in the "Toggle chats" sidebar).
+      // Clicking it opens the sidebar just long enough to trigger the real
+      // New Chat action, then closes it again, so it behaves like a
+      // one-click "clear chat" button matching the Winter Park site.
+      (function () {
+        function injectButton(headerLeft) {
+          if (headerLeft.querySelector('[data-new-chat-quick]')) return;
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'ai-icon-btn';
+          btn.setAttribute('aria-label', 'Start new chat');
+          btn.setAttribute('title', 'Start new chat');
+          btn.setAttribute('data-new-chat-quick', '1');
+          btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>';
+
+          var header = headerLeft.closest('.ai-panel-header');
+          var closeBtn = header ? header.querySelector('[aria-label="Close assistant"]') : null;
+          if (closeBtn) {
+            header.insertBefore(btn, closeBtn);
+          } else {
+            headerLeft.parentElement.appendChild(btn);
+          }
+
+          btn.addEventListener('click', function () {
+            var panel = btn.closest('.ai-panel');
+            var toggleBtn = panel.querySelector('[aria-label="Toggle chats"]');
+            var sidebarWasOpen = !!panel.querySelector('.ai-sidebar');
+
+            if (!sidebarWasOpen) toggleBtn.click();
+
+            requestAnimationFrame(function () {
+              requestAnimationFrame(function () {
+                var newChatBtn = panel.querySelector('[aria-label="New chat"]');
+                if (newChatBtn) newChatBtn.click();
+                if (!sidebarWasOpen) {
+                  requestAnimationFrame(function () { toggleBtn.click(); });
+                }
+              });
+            });
+          });
+        }
+
+        var observer = new MutationObserver(function () {
+          var headerLeft = document.querySelector('.ai-panel-header-left');
+          if (headerLeft) injectButton(headerLeft);
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+      })();
+    </script>
   </body>
 </html>
