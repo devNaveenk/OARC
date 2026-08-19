@@ -1,0 +1,7 @@
+nadia-backend/.env
+nadia-backend/__pycache__/
+nadia-backend/*.pyc
+nadia-backend/venv/
+nadia-backend/.venv/
+nadia-backend/crawl.log
+nadia-backend/flask.log
